@@ -1,4 +1,5 @@
 #include "glue-priv.h"
+#include "glue-ctx.h"
 
 /* 2.5 GL Errors */
 GL_APICALL GLenum GL_APIENTRY
@@ -8,31 +9,55 @@ glGetError(void){
 /* 2.7 Current Vertex State */
 GL_APICALL void GL_APIENTRY
 glVertexAttrib1f(GLuint index, GLfloat x){
+    cwgl_ctx_t* ctx;
+    ctx = glue_current_ctx();
+    cwgl_vertexAttrib1f(ctx, index, x);
 }
 GL_APICALL void GL_APIENTRY
 glVertexAttrib2f(GLuint index, GLfloat x, GLfloat y){
+    cwgl_ctx_t* ctx;
+    ctx = glue_current_ctx();
+    cwgl_vertexAttrib2f(ctx, index, x, y);
 }
 GL_APICALL void GL_APIENTRY
 glVertexAttrib3f(GLuint index, GLfloat x, GLfloat y, GLfloat z){
+    cwgl_ctx_t* ctx;
+    ctx = glue_current_ctx();
+    cwgl_vertexAttrib3f(ctx, index, x, y, z);
 }
 GL_APICALL void GL_APIENTRY
 glVertexAttrib4f(GLuint index, GLfloat x, GLfloat y, GLfloat z, GLfloat w){
+    cwgl_ctx_t* ctx;
+    ctx = glue_current_ctx();
+    cwgl_vertexAttrib4f(ctx, index, x, y, z, w);
 }
 
 GL_APICALL void GL_APIENTRY
 glVertexAttrib1fv(GLuint index, const GLfloat* v){
+    cwgl_ctx_t* ctx;
+    ctx = glue_current_ctx();
+    cwgl_vertexAttrib1f(ctx, index, v[0]);
 }
 
 GL_APICALL void GL_APIENTRY
 glVertexAttrib2fv(GLuint index, const GLfloat* v){
+    cwgl_ctx_t* ctx;
+    ctx = glue_current_ctx();
+    cwgl_vertexAttrib2f(ctx, index, v[0], v[1]);
 }
 
 GL_APICALL void GL_APIENTRY
 glVertexAttrib3fv(GLuint index, const GLfloat* v){
+    cwgl_ctx_t* ctx;
+    ctx = glue_current_ctx();
+    cwgl_vertexAttrib3f(ctx, index, v[0], v[1], v[2]);
 }
 
 GL_APICALL void GL_APIENTRY
 glVertexAttrib4fv(GLuint index, const GLfloat* v){
+    cwgl_ctx_t* ctx;
+    ctx = glue_current_ctx();
+    cwgl_vertexAttrib4f(ctx, index, v[0], v[1], v[2], v[3]);
 }
 
 /* 2.8 Vertex Arrays */
@@ -248,10 +273,15 @@ glValidateProgram(GLuint program){
 /* 2.12.1 Controlling the Viewport */
 GL_APICALL void GL_APIENTRY
 glDepthRangef(GLclampf n, GLclampf f){
+    cwgl_ctx_t* ctx;
+    ctx = glue_current_ctx();
+    cwgl_depthRange(ctx, n, f);
 }
 
 GL_APICALL void GL_APIENTRY
 glViewport(GLint x, GLint y, GLsizei w, GLsizei h){
+    cwgl_ctx_t* ctx;
+    ctx = glue_current_ctx();
+    cwgl_viewport(ctx, x, y, w, h);
 }
-
 
