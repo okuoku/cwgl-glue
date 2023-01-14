@@ -8,7 +8,7 @@ glScissor(GLint left, GLint bottom, GLsizei width, GLsizei height){
 
 /* 4.1.3 Multisample Fragment Operations */
 GL_APICALL void GL_APIENTRY
-glSampleConverage(GLclampf value, GLboolean invert){
+glSampleCoverage(GLclampf value, GLboolean invert){
 }
 
 /* 4.1.4 Stencil Test */

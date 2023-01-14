@@ -90,7 +90,7 @@ x(glBindTexture) \
 x(glDeleteTextures) \
 x(glGenTextures) \
 x(glScissor) \
-x(glSampleConverage) \
+x(glSampleCoverage) \
 x(glStencilFunc) \
 x(glStencilFuncSeparate) \
 x(glStencilOp) \
