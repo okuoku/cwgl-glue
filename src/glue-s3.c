@@ -1,29 +1,45 @@
 #include "glue-priv.h"
+#include "glue-ctx.h"
 
 /* 3.4 Line Segments */
 GL_APICALL void GL_APIENTRY
 glLineWidth(GLfloat width){
+    cwgl_ctx_t* ctx;
+    ctx = glue_current_ctx();
+    cwgl_lineWidth(ctx, width);
 }
 
 /* 3.5 Polygons */
 /* 3.5.1 Basic Polygon Rasterization */
 GL_APICALL void GL_APIENTRY
 glFrontFace(GLenum dir){
+    cwgl_ctx_t* ctx;
+    ctx = glue_current_ctx();
+    cwgl_frontFace(ctx, (cwgl_enum_t) dir);
 }
 
 GL_APICALL void GL_APIENTRY
 glCullFace(GLenum mode){
+    cwgl_ctx_t* ctx;
+    ctx = glue_current_ctx();
+    cwgl_cullFace(ctx, (cwgl_enum_t) mode);
 }
 
 /* 3.5.2 Depth Offset */
 GL_APICALL void GL_APIENTRY
 glPolygonOffset(GLfloat factor, GLfloat units){
+    cwgl_ctx_t* ctx;
+    ctx = glue_current_ctx();
+    cwgl_polygonOffset(ctx, factor, units);
 }
 
 /* 3.6 Pixel Rectangles */
 /* 3.6.1 Pixel Storage Modes */
 GL_APICALL void GL_APIENTRY
 glPixelStorei(GLenum pname, GLint param /* ??? */){
+    cwgl_ctx_t* ctx;
+    ctx = glue_current_ctx();
+    cwgl_pixelStorei(ctx, (cwgl_enum_t) pname, param);
 }
 
 /* 3.7 Texturing */
