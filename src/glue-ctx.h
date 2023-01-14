@@ -51,8 +51,11 @@ typedef struct glue_va_state_s glue_va_state_t;
 
 struct glue_ctx_s {
     cwgl_ctx_t* ctx;
-    size_t obj_count;
-    glue_obj_slot_t* objs;
+    size_t objs;
+    glue_obj_slot_t* obj;
     glue_va_state_t va_state[GLUE_MAX_VERTEX_ATTRIBUTES];
 };
 typedef struct glue_ctx_s glue_ctx_t;
+
+cwgl_ctx_t* glue_current_ctx(void);
+glue_ctx_t* glue_init(int width, int height);
