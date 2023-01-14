@@ -178,48 +178,58 @@ glClearStencil(GLint s){
 GL_APICALL void GL_APIENTRY
 glReadPixels(GLint x, GLint y, GLsizei width, GLsizei height, 
              GLenum format, GLenum type, void *data){
+    // FIXME:
 }
 
 /* 4.4 Framebuffer Objects */
 /* 4.4.1 Binding and Managing Framebuffer Objects */
 GL_APICALL void GL_APIENTRY
 glBindFramebuffer(GLenum target, GLuint framebuffer){
+    // FIXME:
 }
 
 GL_APICALL void GL_APIENTRY
 glDeleteFramebuffers(GLsizei n, const GLuint *framebuffers){
+    // FIXME:
 }
 
 GL_APICALL void GL_APIENTRY
 glGenFramebuffers(GLsizei n, GLuint *framebuffers){
+    // FIXME:
 }
 
 /* 4.4.3 Renderbuffer Objects */
 GL_APICALL void GL_APIENTRY
 glBindRenderbuffer(GLenum target, GLuint renderbuffer){
+    // FIXME:
 }
 
 GL_APICALL void GL_APIENTRY
 glDeleteRenderbuffers(GLsizei n, const GLuint *renderbuffers){
+    // FIXME:
 }
 
 GL_APICALL void GL_APIENTRY
 glGenRenderbuffers(GLsizei n, GLuint *renderbuffers){
+    // FIXME:
 }
 
 GL_APICALL void GL_APIENTRY
 glRenderbufferStorage(GLenum target, GLenum internalformat,
                       GLsizei width, GLsizei height){
+    // FIXME:
 }
 
 GL_APICALL void GL_APIENTRY
 glFramebufferRenderbuffer(GLenum target, GLenum attachment,
                           GLenum renderbuffertarget, GLuint renderbuffer){
+    // FIXME:
 }
 
 GL_APICALL void GL_APIENTRY
 glFramebufferTexture2D(GLenum target, GLenum attachiment, GLenum textarget,
                        GLuint texture, GLint level){
+    // FIXME:
 }
 
 /* 4.4.5 Framebuffer Completeness */
