@@ -1,5 +1,6 @@
 #include "glue-priv.h"
 #include "glue-ctx.h"
+#include <stdlib.h>
 
 /* 3.4 Line Segments */
 GL_APICALL void GL_APIENTRY
@@ -151,17 +152,62 @@ glGenerateMipmap(GLenum target){
 /* 3.7.13 Texture Objects */
 GL_APICALL void GL_APIENTRY
 glBindTexture(GLenum target, GLuint texture){
-    // FIXME:
+    cwgl_ctx_t* ctx;
+    glue_ctx_t* glue;
+    glue_obj_ptr_t* ptr;
+    cwgl_Texture_t* tex;
+    ctx = glue_current_ctx();
+    glue = glue_current_glue();
+
+    if(! texture){
+        tex = 0;
+    }else{
+        ptr = glue_get(glue, OBJ_TEXTURE, texture);
+        if(! ptr){
+            abort(); // unknown
+            return;
+        }else{
+            tex = ptr->texture;
+        }
+    }
+
+    cwgl_bindTexture(ctx, (cwgl_enum_t) target, tex);
+
 }
 
 GL_APICALL void GL_APIENTRY
 glDeleteTextures(GLsizei n, const GLuint *textures){
-    // FIXME:
+    GLsizei x;
+    cwgl_ctx_t* ctx;
+    glue_ctx_t* glue;
+    glue_obj_ptr_t* ptr;
+    ctx = glue_current_ctx();
+    glue = glue_current_glue();
+
+    for(x = 0;x != n; x++){
+        if(textures[x]){
+            ptr = glue_get(glue, OBJ_TEXTURE, textures[x]);
+            if(! ptr){
+                abort(); // unknown
+                return;
+            }
+            cwgl_deleteTexture(ctx, ptr->texture);
+            (void) glue_del(glue, OBJ_TEXTURE, textures[x]);
+        }
+    }
 }
 
 GL_APICALL void GL_APIENTRY
 glGenTextures(GLsizei n, GLuint *textures){
-    // FIXME:
+    GLsizei x;
+    cwgl_ctx_t* ctx;
+    glue_ctx_t* glue;
+    glue_obj_ptr_t ptr;
+    ctx = glue_current_ctx();
+    glue = glue_current_glue();
+
+    for(x = 0; x != n; x++){
+        ptr.texture = cwgl_createTexture(ctx);
+        textures[x] = glue_put(glue, OBJ_TEXTURE, &ptr);
+    }
 }
-
-
