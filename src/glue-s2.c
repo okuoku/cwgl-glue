@@ -431,7 +431,42 @@ GL_APICALL void GL_APIENTRY
 glGetActiveAttrib(GLuint program, GLuint index, GLsizei bufSize,
                   GLsizei *length, GLint *size, GLenum *type,
                   char *name){
-    // FIXME:
+    cwgl_ctx_t* ctx;
+    glue_ctx_t* glue;
+    glue_obj_ptr_t* ptr;
+    cwgl_Program_t* prg;
+
+    int32_t out_size;
+    int32_t out_type;
+    cwgl_string_t* out_name;
+    cwgl_query_result_t r;
+
+
+    ctx = glue_current_ctx();
+    glue = glue_current_glue();
+    ptr = glue_get(glue, OBJ_PROGRAM, program);
+    if(! ptr){
+        abort(); // error
+    }
+
+    prg = ptr->program;
+    r = cwgl_getActiveAttrib(ctx, prg, index,
+                             &out_size, &out_type, &out_name);
+
+    if(r != CWGL_QR_SUCCESS){
+        if(r == CWGL_QR_GLERROR){
+            return;
+        }
+        abort();
+    }
+
+    *size = out_size;
+    *type = (GLenum) (unsigned int) out_type;
+    (void)cwgl_string_read(ctx, out_name, name, bufSize);
+    if(length){
+        *length = cwgl_string_size(ctx, out_name);
+    }
+    cwgl_string_release(ctx, out_name);
 }
 
 GL_APICALL GLint GL_APIENTRY
@@ -453,7 +488,42 @@ GL_APICALL void GL_APIENTRY
 glGetActiveUniform(GLuint program, GLuint index, GLsizei bufSize,
                    GLsizei *length, GLint *size, GLenum *type,
                    char *name){
-    // FIXME:
+    cwgl_ctx_t* ctx;
+    glue_ctx_t* glue;
+    glue_obj_ptr_t* ptr;
+    cwgl_Program_t* prg;
+
+    int32_t out_size;
+    int32_t out_type;
+    cwgl_string_t* out_name;
+    cwgl_query_result_t r;
+
+
+    ctx = glue_current_ctx();
+    glue = glue_current_glue();
+    ptr = glue_get(glue, OBJ_PROGRAM, program);
+    if(! ptr){
+        abort(); // error
+    }
+
+    prg = ptr->program;
+    r = cwgl_getActiveUniform(ctx, prg, index,
+                              &out_size, &out_type, &out_name);
+
+    if(r != CWGL_QR_SUCCESS){
+        if(r == CWGL_QR_GLERROR){
+            return;
+        }
+        abort();
+    }
+
+    *size = out_size;
+    *type = (GLenum) (unsigned int) out_type;
+    (void)cwgl_string_read(ctx, out_name, name, bufSize);
+    if(length){
+        *length = cwgl_string_size(ctx, out_name);
+    }
+    cwgl_string_release(ctx, out_name);
 }
 
 GL_APICALL void GL_APIENTRY
