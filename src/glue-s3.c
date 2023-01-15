@@ -45,7 +45,10 @@ glPixelStorei(GLenum pname, GLint param /* ??? */){
 /* 3.7 Texturing */
 GL_APICALL void GL_APIENTRY
 glActiveTexture(GLenum texture){
-    // FIXME:
+    cwgl_ctx_t* ctx;
+    ctx = glue_current_ctx();
+
+    cwgl_activeTexture(ctx, (cwgl_enum_t) texture);
 }
 
 /* 3.7.1 Texture Image Specification */
@@ -60,7 +63,13 @@ glTexImage2D(GLenum target, GLint level, GLint internalformat,
 GL_APICALL void GL_APIENTRY
 glCopyTexImage2D(GLenum target, GLint level, GLenum internalformat,
                  GLint x, GLint y, GLsizei width, GLsizei height, GLint border){
-    // FIXME:
+    cwgl_ctx_t* ctx;
+    ctx = glue_current_ctx();
+
+    cwgl_copyTexImage2D(ctx, (cwgl_enum_t) target, level,
+                        (cwgl_enum_t) internalformat, 
+                        x, y, width, height, border);
+
 }
 
 GL_APICALL void GL_APIENTRY
@@ -73,7 +82,11 @@ glTexSubImage2D(GLenum target, GLint level, GLint xoffset, GLint yoffset,
 GL_APICALL void GL_APIENTRY
 glCopyTexSubImage2D(GLenum target, GLint level, GLint xoffset, GLint yoffset,
                     GLint x, GLint y, GLsizei width, GLsizei height){
-    // FIXME:
+    cwgl_ctx_t* ctx;
+    ctx = glue_current_ctx();
+
+    cwgl_copyTexSubImage2D(ctx, (cwgl_enum_t) target, level, xoffset, yoffset, 
+                           x, y, width, height);
 }
 
 /* 3.7.3 Compressed Texture Images */
@@ -94,28 +107,45 @@ glCompressedTexSubImage2D(GLenum target, GLint level, GLint xoffset,
 /* 3.7.4 Texture Parameters */
 GL_APICALL void GL_APIENTRY
 glTexParameteri(GLenum target, GLenum pname, GLint param){
-    // FIXME:
+    cwgl_ctx_t* ctx;
+    ctx = glue_current_ctx();
+
+    cwgl_texParameteri(ctx, (cwgl_enum_t) target, (cwgl_enum_t) pname, param);
 }
 
 GL_APICALL void GL_APIENTRY
 glTexParameterf(GLenum target, GLenum pname, GLfloat param){
-    // FIXME:
+    cwgl_ctx_t* ctx;
+    ctx = glue_current_ctx();
+
+    cwgl_texParameterf(ctx, (cwgl_enum_t) target, (cwgl_enum_t) pname, param);
 }
 
 GL_APICALL void GL_APIENTRY
 glTexParameteriv(GLenum target, GLenum pname, const GLint* params){
-    // FIXME:
+    cwgl_ctx_t* ctx;
+    ctx = glue_current_ctx();
+
+    cwgl_texParameteri(ctx, (cwgl_enum_t) target, (cwgl_enum_t) pname, 
+                       params[0]);
 }
 
 GL_APICALL void GL_APIENTRY
 glTexParameterfv(GLenum target, GLenum pname, const GLfloat* params){
-    // FIXME:
+    cwgl_ctx_t* ctx;
+    ctx = glue_current_ctx();
+
+    cwgl_texParameterf(ctx, (cwgl_enum_t) target, (cwgl_enum_t) pname, 
+                       params[0]);
 }
 
 /* 3.7.11 Mipmap Generation */
 GL_APICALL void GL_APIENTRY
 glGenerateMipmap(GLenum target){
-    // FIXME:
+    cwgl_ctx_t* ctx;
+    ctx = glue_current_ctx();
+
+    cwgl_generateMipmap(ctx, (cwgl_enum_t) target);
 }
 
 /* 3.7.13 Texture Objects */
