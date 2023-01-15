@@ -527,6 +527,9 @@ glGetUniformLocation(GLuint program, const char *name){
 
     /* Allocate UniformLocation */
     loc = cwgl_getUniformLocation(ctx, prg, name);
+    if(! loc){
+        return (GLint) -1;
+    }
     for(x = 0; x != GLUE_MAX_UNIFORMS; x++){
         cache = &glue->obj[program].uniform_cache[x];
         if(! cache->obj){
