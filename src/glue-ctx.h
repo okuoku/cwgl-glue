@@ -59,6 +59,7 @@ struct glue_ctx_s {
 typedef struct glue_ctx_s glue_ctx_t;
 
 void glue_seterror(glue_ctx_t* ctx, cwgl_enum_t err);
+void glue_clear_uniform_cache(glue_ctx_t* ctx, size_t program);
 size_t glue_put(glue_ctx_t* ctx, glue_obj_type_t type, glue_obj_ptr_t* ptr);
 glue_obj_ptr_t* glue_get(glue_ctx_t* ctx, glue_obj_type_t type, size_t objid);
 int glue_del(glue_ctx_t* ctx, glue_obj_type_t type, size_t objid);

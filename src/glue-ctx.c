@@ -54,9 +54,24 @@ glue_get(glue_ctx_t* ctx, glue_obj_type_t type, size_t objid){
     return &obj->ptr;
 }
 
+void 
+glue_clear_uniform_cache(glue_ctx_t* ctx, size_t program){
+    size_t x;
+    glue_obj_slot_t* obj;
+    obj = &ctx->obj[program];
+    for(x = 0; x != GLUE_MAX_UNIFORMS; x++){
+        if(obj->uniform_cache[x].obj){
+            cwgl_UniformLocation_release(ctx->ctx, 
+                                         obj->uniform_cache[x].obj);
+            free(obj->uniform_cache[x].name);
+            obj->uniform_cache[x].obj = 0;
+            obj->uniform_cache[x].name = 0;
+        }
+    }
+}
+
 int /* bool */
 glue_del(glue_ctx_t* ctx, glue_obj_type_t type, size_t objid){
-    size_t x;
     cwgl_ctx_t* cwgl;
     glue_obj_slot_t* obj;
     if(objid >= ctx->objs){
@@ -78,16 +93,8 @@ glue_del(glue_ctx_t* ctx, glue_obj_type_t type, size_t objid){
             cwgl_Shader_release(cwgl, obj->ptr.shader);
             break;
         case OBJ_PROGRAM:
+            glue_clear_uniform_cache(ctx, objid);
             cwgl_Program_release(cwgl, obj->ptr.program);
-            for(x = 0; x != GLUE_MAX_UNIFORMS; x++){
-                if(obj->uniform_cache[x].obj){
-                    cwgl_UniformLocation_release(cwgl, 
-                                                 obj->uniform_cache[x].obj);
-                    free(obj->uniform_cache[x].name);
-                    obj->uniform_cache[x].obj = 0;
-                    obj->uniform_cache[x].name = 0;
-                }
-            }
             break;
         case OBJ_TEXTURE:
             cwgl_Texture_release(cwgl, obj->ptr.texture);

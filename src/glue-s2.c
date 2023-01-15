@@ -390,6 +390,7 @@ glLinkProgram(GLuint program){
     }
     prg = ptr->program;
 
+    glue_clear_uniform_cache(glue, program);
     cwgl_linkProgram(ctx, prg);
 }
 
