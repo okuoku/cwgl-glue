@@ -438,9 +438,13 @@ glGetActiveAttrib(GLuint program, GLuint index, GLsizei bufSize,
 
     int32_t out_size;
     int32_t out_type;
+    size_t namesize;
     cwgl_string_t* out_name;
     cwgl_query_result_t r;
 
+    if(bufSize < 0){
+        abort();
+    }
 
     ctx = glue_current_ctx();
     glue = glue_current_glue();
@@ -462,9 +466,23 @@ glGetActiveAttrib(GLuint program, GLuint index, GLsizei bufSize,
 
     *size = out_size;
     *type = (GLenum) (unsigned int) out_type;
-    (void)cwgl_string_read(ctx, out_name, name, bufSize);
-    if(length){
-        *length = cwgl_string_size(ctx, out_name);
+    namesize = cwgl_string_size(ctx, out_name);
+    if(namesize == 0){
+        if(bufSize > 0){
+            name[0] = 0;
+        }
+        if(length){
+            *length = 0;
+        }
+    }else{
+        if((unsigned)bufSize <= namesize){
+            namesize = bufSize - 1;
+        }
+        (void)cwgl_string_read(ctx, out_name, name, bufSize);
+        name[namesize] = 0;
+        if(length){
+            *length = namesize;
+        }
     }
     cwgl_string_release(ctx, out_name);
 }
@@ -495,9 +513,13 @@ glGetActiveUniform(GLuint program, GLuint index, GLsizei bufSize,
 
     int32_t out_size;
     int32_t out_type;
+    size_t namesize;
     cwgl_string_t* out_name;
     cwgl_query_result_t r;
 
+    if(bufSize < 0){
+        abort();
+    }
 
     ctx = glue_current_ctx();
     glue = glue_current_glue();
@@ -519,9 +541,23 @@ glGetActiveUniform(GLuint program, GLuint index, GLsizei bufSize,
 
     *size = out_size;
     *type = (GLenum) (unsigned int) out_type;
-    (void)cwgl_string_read(ctx, out_name, name, bufSize);
-    if(length){
-        *length = cwgl_string_size(ctx, out_name);
+    namesize = cwgl_string_size(ctx, out_name);
+    if(namesize == 0){
+        if(bufSize > 0){
+            name[0] = 0;
+        }
+        if(length){
+            *length = 0;
+        }
+    }else{
+        if((unsigned)bufSize <= namesize){
+            namesize = bufSize - 1;
+        }
+        (void)cwgl_string_read(ctx, out_name, name, bufSize);
+        name[namesize] = 0;
+        if(length){
+            *length = namesize;
+        }
     }
     cwgl_string_release(ctx, out_name);
 }
