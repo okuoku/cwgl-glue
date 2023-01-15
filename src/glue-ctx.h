@@ -54,9 +54,11 @@ struct glue_ctx_s {
     size_t objs;
     glue_obj_slot_t* obj;
     glue_va_state_t va_state[GLUE_MAX_VERTEX_ATTRIBUTES];
+    cwgl_enum_t err;
 };
 typedef struct glue_ctx_s glue_ctx_t;
 
+void glue_seterror(glue_ctx_t* ctx, cwgl_enum_t err);
 size_t glue_put(glue_ctx_t* ctx, glue_obj_type_t type, glue_obj_ptr_t* ptr);
 glue_obj_ptr_t* glue_get(glue_ctx_t* ctx, glue_obj_type_t type, size_t objid);
 int glue_del(glue_ctx_t* ctx, glue_obj_type_t type, size_t objid);

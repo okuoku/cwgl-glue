@@ -1,5 +1,6 @@
 #include "glue-priv.h"
 #include "glue-ctx.h"
+#include <stdlib.h>
 
 /* 4.1 Per-Fragment Operations */
 /* 4.1.2 Scissor Test */
@@ -185,51 +186,191 @@ glReadPixels(GLint x, GLint y, GLsizei width, GLsizei height,
 /* 4.4.1 Binding and Managing Framebuffer Objects */
 GL_APICALL void GL_APIENTRY
 glBindFramebuffer(GLenum target, GLuint framebuffer){
-    // FIXME:
+    cwgl_ctx_t* ctx;
+    glue_ctx_t* glue;
+    glue_obj_ptr_t* ptr;
+    cwgl_Framebuffer_t* fb;
+    ctx = glue_current_ctx();
+    glue = glue_current_glue();
+
+    if(! framebuffer){
+        fb = 0;
+    }else{
+        ptr = glue_get(glue, OBJ_FRAMEBUFFER, framebuffer);
+        if(! ptr){
+            abort(); // unknown
+            return;
+        }else{
+            fb = ptr->framebuffer;
+        }
+    }
+    cwgl_bindFramebuffer(ctx, (cwgl_enum_t) target, fb);
 }
 
 GL_APICALL void GL_APIENTRY
 glDeleteFramebuffers(GLsizei n, const GLuint *framebuffers){
-    // FIXME:
+    GLsizei x;
+    cwgl_ctx_t* ctx;
+    glue_ctx_t* glue;
+    glue_obj_ptr_t* ptr;
+    ctx = glue_current_ctx();
+    glue = glue_current_glue();
+
+    for(x = 0;x != n; x++){
+        if(framebuffers[x]){
+            ptr = glue_get(glue, OBJ_FRAMEBUFFER, framebuffers[x]);
+            if(! ptr){
+                abort(); // unknown
+                return;
+            }
+            cwgl_deleteFramebuffer(ctx, ptr->framebuffer);
+            (void) glue_del(glue, OBJ_FRAMEBUFFER, framebuffers[x]);
+        }
+    }
 }
 
 GL_APICALL void GL_APIENTRY
 glGenFramebuffers(GLsizei n, GLuint *framebuffers){
-    // FIXME:
+    GLsizei x;
+    cwgl_ctx_t* ctx;
+    glue_ctx_t* glue;
+    glue_obj_ptr_t ptr;
+    ctx = glue_current_ctx();
+    glue = glue_current_glue();
+
+    for(x = 0; x != n; x++){
+        ptr.framebuffer = cwgl_createFramebuffer(ctx);
+        framebuffers[x] = glue_put(glue, OBJ_FRAMEBUFFER, &ptr);
+    }
 }
 
 /* 4.4.3 Renderbuffer Objects */
 GL_APICALL void GL_APIENTRY
 glBindRenderbuffer(GLenum target, GLuint renderbuffer){
-    // FIXME:
+    cwgl_ctx_t* ctx;
+    glue_ctx_t* glue;
+    glue_obj_ptr_t* ptr;
+    cwgl_Renderbuffer_t* rb;
+    ctx = glue_current_ctx();
+    glue = glue_current_glue();
+
+    if(! renderbuffer){
+        rb = 0;
+    }else{
+        ptr = glue_get(glue, OBJ_RENDERBUFFER, renderbuffer);
+        if(! ptr){
+            abort(); // unknown
+            return;
+        }else{
+            rb = ptr->renderbuffer;
+        }
+    }
+    cwgl_bindRenderbuffer(ctx, (cwgl_enum_t) target, rb);
 }
 
 GL_APICALL void GL_APIENTRY
 glDeleteRenderbuffers(GLsizei n, const GLuint *renderbuffers){
-    // FIXME:
+    GLsizei x;
+    cwgl_ctx_t* ctx;
+    glue_ctx_t* glue;
+    glue_obj_ptr_t* ptr;
+    ctx = glue_current_ctx();
+    glue = glue_current_glue();
+
+    for(x = 0;x != n; x++){
+        if(renderbuffers[x]){
+            ptr = glue_get(glue, OBJ_RENDERBUFFER, renderbuffers[x]);
+            if(! ptr){
+                abort(); // unknown
+                return;
+            }
+            cwgl_deleteRenderbuffer(ctx, ptr->renderbuffer);
+            (void) glue_del(glue, OBJ_RENDERBUFFER, renderbuffers[x]);
+        }
+    }
 }
 
 GL_APICALL void GL_APIENTRY
 glGenRenderbuffers(GLsizei n, GLuint *renderbuffers){
-    // FIXME:
+    GLsizei x;
+    cwgl_ctx_t* ctx;
+    glue_ctx_t* glue;
+    glue_obj_ptr_t ptr;
+    ctx = glue_current_ctx();
+    glue = glue_current_glue();
+
+    for(x = 0; x != n; x++){
+        ptr.renderbuffer = cwgl_createRenderbuffer(ctx);
+        renderbuffers[x] = glue_put(glue, OBJ_RENDERBUFFER, &ptr);
+    }
 }
 
 GL_APICALL void GL_APIENTRY
 glRenderbufferStorage(GLenum target, GLenum internalformat,
                       GLsizei width, GLsizei height){
-    // FIXME:
+    cwgl_ctx_t* ctx;
+    ctx = glue_current_ctx();
+
+    cwgl_renderbufferStorage(ctx, (cwgl_enum_t) target, 
+                             (cwgl_enum_t) internalformat,
+                             width, height);
 }
 
 GL_APICALL void GL_APIENTRY
 glFramebufferRenderbuffer(GLenum target, GLenum attachment,
                           GLenum renderbuffertarget, GLuint renderbuffer){
-    // FIXME:
+    cwgl_ctx_t* ctx;
+    glue_ctx_t* glue;
+    glue_obj_ptr_t* ptr;
+    cwgl_Renderbuffer_t* rb;
+    ctx = glue_current_ctx();
+    glue = glue_current_glue();
+
+    if(! renderbuffer){
+        rb = 0;
+    }else{
+        ptr = glue_get(glue, OBJ_RENDERBUFFER, renderbuffer);
+        if(! ptr){
+            abort(); // unknown
+            return;
+        }else{
+            rb = ptr->renderbuffer;
+        }
+    }
+
+    cwgl_framebufferRenderbuffer(ctx, (cwgl_enum_t) target,
+                                 (cwgl_enum_t) attachment,
+                                 (cwgl_enum_t) renderbuffertarget,
+                                 rb);
 }
 
 GL_APICALL void GL_APIENTRY
-glFramebufferTexture2D(GLenum target, GLenum attachiment, GLenum textarget,
+glFramebufferTexture2D(GLenum target, GLenum attachment, GLenum textarget,
                        GLuint texture, GLint level){
-    // FIXME:
+    cwgl_ctx_t* ctx;
+    glue_ctx_t* glue;
+    glue_obj_ptr_t* ptr;
+    cwgl_Texture_t* tex;
+    ctx = glue_current_ctx();
+    glue = glue_current_glue();
+
+    if(! texture){
+        tex = 0;
+    }else{
+        ptr = glue_get(glue, OBJ_TEXTURE, texture);
+        if(! ptr){
+            abort(); // unknown
+            return;
+        }else{
+            tex = ptr->texture;
+        }
+    }
+
+    cwgl_framebufferTexture2D(ctx, (cwgl_enum_t) target,
+                              (cwgl_enum_t) attachment,
+                              (cwgl_enum_t) textarget,
+                              tex, level);
+
 }
 
 /* 4.4.5 Framebuffer Completeness */
