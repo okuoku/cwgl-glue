@@ -85,7 +85,6 @@ glue_del(glue_ctx_t* ctx, glue_obj_type_t type, size_t objid){
                                                  obj->uniform_cache[x].obj);
                     free(obj->uniform_cache[x].name);
                     obj->uniform_cache[x].obj = 0;
-                    obj->uniform_cache[x].location = 0;
                     obj->uniform_cache[x].name = 0;
                 }
             }

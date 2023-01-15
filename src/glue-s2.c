@@ -409,6 +409,7 @@ glUseProgram(GLuint program){
     prg = ptr->program;
 
     cwgl_useProgram(ctx, prg);
+    glue->current_program = program;
 }
 
 GL_APICALL void GL_APIENTRY
@@ -499,7 +500,42 @@ glBindAttribLocation(GLuint program, GLuint index, const char *name){
 
 GL_APICALL GLint GL_APIENTRY
 glGetUniformLocation(GLuint program, const char *name){
-    // FIXME:
+    int x;
+    cwgl_ctx_t* ctx;
+    glue_ctx_t* glue;
+    glue_obj_ptr_t* ptr;
+    cwgl_Program_t* prg;
+    cwgl_UniformLocation_t* loc;
+    glue_program_uniform_cache_t* cache;
+    ctx = glue_current_ctx();
+    glue = glue_current_glue();
+
+    ptr = glue_get(glue, OBJ_PROGRAM, program);
+    if(! ptr){
+        abort(); // error
+    }
+    prg = ptr->program;
+
+    /* First, search for cached uniform location */
+    for(x = 0; x != GLUE_MAX_UNIFORMS; x++){
+        cache = &glue->obj[program].uniform_cache[x];
+        if(! strcmp(cache->name, name)){
+            return x;
+        }
+    }
+
+    /* Allocate UniformLocation */
+    loc = cwgl_getUniformLocation(ctx, prg, name);
+    for(x = 0; x != GLUE_MAX_UNIFORMS; x++){
+        cache = &glue->obj[program].uniform_cache[x];
+        if(! cache->obj){
+            cache->obj = loc;
+            cache->name = _strdup(name);
+            return x;
+        }
+    }
+
+    abort(); // overflow
 }
 
 GL_APICALL void GL_APIENTRY
@@ -562,102 +598,260 @@ glGetActiveUniform(GLuint program, GLuint index, GLsizei bufSize,
     cwgl_string_release(ctx, out_name);
 }
 
+static cwgl_UniformLocation_t*
+uniformlocation(glue_ctx_t* glue, GLint location){
+    unsigned int program = glue->current_program;
+    cwgl_UniformLocation_t* loc;
+    if(location >= GLUE_MAX_UNIFORMS){
+        abort();
+    }
+    if(! program){
+        abort();
+    }
+    if(program >= glue->objs){
+        abort();
+    }
+    if(glue->obj[program].type != OBJ_PROGRAM){
+        abort();
+    }
+
+    loc = glue->obj[program].uniform_cache[location].obj;
+    if(! loc){
+        abort();
+    }
+
+    return loc;
+}
+
 GL_APICALL void GL_APIENTRY
 glUniform1i(GLint location, GLint x){
-    // FIXME:
+    cwgl_ctx_t* ctx;
+    glue_ctx_t* glue;
+    cwgl_UniformLocation_t* loc;
+    ctx = glue_current_ctx();
+    glue = glue_current_glue();
+
+    loc = uniformlocation(glue, location);
+    cwgl_uniform1i(ctx, loc, x);
 }
 
 GL_APICALL void GL_APIENTRY
 glUniform2i(GLint location, GLint x, GLint y){
-    // FIXME:
+    cwgl_ctx_t* ctx;
+    glue_ctx_t* glue;
+    cwgl_UniformLocation_t* loc;
+    ctx = glue_current_ctx();
+    glue = glue_current_glue();
+
+    loc = uniformlocation(glue, location);
+    cwgl_uniform2i(ctx, loc, x, y);
 }
 
 GL_APICALL void GL_APIENTRY
 glUniform3i(GLint location, GLint x, GLint y, GLint z){
-    // FIXME:
+    cwgl_ctx_t* ctx;
+    glue_ctx_t* glue;
+    cwgl_UniformLocation_t* loc;
+    ctx = glue_current_ctx();
+    glue = glue_current_glue();
+
+    loc = uniformlocation(glue, location);
+    cwgl_uniform3i(ctx, loc, x, y, z);
 }
 
 GL_APICALL void GL_APIENTRY
 glUniform4i(GLint location, GLint x, GLint y, GLint z, GLint w){
-    // FIXME:
+    cwgl_ctx_t* ctx;
+    glue_ctx_t* glue;
+    cwgl_UniformLocation_t* loc;
+    ctx = glue_current_ctx();
+    glue = glue_current_glue();
+
+    loc = uniformlocation(glue, location);
+    cwgl_uniform4i(ctx, loc, x, y, z, w);
 }
 
 GL_APICALL void GL_APIENTRY
 glUniform1f(GLint location, GLfloat x){
-    // FIXME:
+    cwgl_ctx_t* ctx;
+    glue_ctx_t* glue;
+    cwgl_UniformLocation_t* loc;
+    ctx = glue_current_ctx();
+    glue = glue_current_glue();
+
+    loc = uniformlocation(glue, location);
+    cwgl_uniform1f(ctx, loc, x);
 }
 
 GL_APICALL void GL_APIENTRY
 glUniform2f(GLint location, GLfloat x, GLfloat y){
-    // FIXME:
+    cwgl_ctx_t* ctx;
+    glue_ctx_t* glue;
+    cwgl_UniformLocation_t* loc;
+    ctx = glue_current_ctx();
+    glue = glue_current_glue();
+
+    loc = uniformlocation(glue, location);
+    cwgl_uniform2f(ctx, loc, x, y);
 }
 
 GL_APICALL void GL_APIENTRY
 glUniform3f(GLint location, GLfloat x, GLfloat y, GLfloat z){
-    // FIXME:
+    cwgl_ctx_t* ctx;
+    glue_ctx_t* glue;
+    cwgl_UniformLocation_t* loc;
+    ctx = glue_current_ctx();
+    glue = glue_current_glue();
+
+    loc = uniformlocation(glue, location);
+    cwgl_uniform3f(ctx, loc, x, y, z);
 }
 
 GL_APICALL void GL_APIENTRY
 glUniform4f(GLint location, GLfloat x, GLfloat y, GLfloat z, GLfloat w){
-    // FIXME:
+    cwgl_ctx_t* ctx;
+    glue_ctx_t* glue;
+    cwgl_UniformLocation_t* loc;
+    ctx = glue_current_ctx();
+    glue = glue_current_glue();
+
+    loc = uniformlocation(glue, location);
+    cwgl_uniform4f(ctx, loc, x, y, z, w);
 }
 
 GL_APICALL void GL_APIENTRY
 glUniform1iv(GLint location, GLsizei count, const GLint* v){
-    // FIXME:
+    cwgl_ctx_t* ctx;
+    glue_ctx_t* glue;
+    cwgl_UniformLocation_t* loc;
+    ctx = glue_current_ctx();
+    glue = glue_current_glue();
+
+    loc = uniformlocation(glue, location);
+    cwgl_uniform1iv(ctx, loc, v, count);
 }
 
 GL_APICALL void GL_APIENTRY
 glUniform2iv(GLint location, GLsizei count, const GLint* v){
-    // FIXME:
+    cwgl_ctx_t* ctx;
+    glue_ctx_t* glue;
+    cwgl_UniformLocation_t* loc;
+    ctx = glue_current_ctx();
+    glue = glue_current_glue();
+
+    loc = uniformlocation(glue, location);
+    cwgl_uniform2iv(ctx, loc, v, count);
 }
 
 GL_APICALL void GL_APIENTRY
 glUniform3iv(GLint location, GLsizei count, const GLint* v){
-    // FIXME:
+    cwgl_ctx_t* ctx;
+    glue_ctx_t* glue;
+    cwgl_UniformLocation_t* loc;
+    ctx = glue_current_ctx();
+    glue = glue_current_glue();
+
+    loc = uniformlocation(glue, location);
+    cwgl_uniform3iv(ctx, loc, v, count);
 }
 
 GL_APICALL void GL_APIENTRY
 glUniform4iv(GLint location, GLsizei count, const GLint* v){
-    // FIXME:
+    cwgl_ctx_t* ctx;
+    glue_ctx_t* glue;
+    cwgl_UniformLocation_t* loc;
+    ctx = glue_current_ctx();
+    glue = glue_current_glue();
+
+    loc = uniformlocation(glue, location);
+    cwgl_uniform4iv(ctx, loc, v, count);
 }
 
 GL_APICALL void GL_APIENTRY
 glUniform1fv(GLint location, GLsizei count, const GLfloat* v){
-    // FIXME:
+    cwgl_ctx_t* ctx;
+    glue_ctx_t* glue;
+    cwgl_UniformLocation_t* loc;
+    ctx = glue_current_ctx();
+    glue = glue_current_glue();
+
+    loc = uniformlocation(glue, location);
+    cwgl_uniform1fv(ctx, loc, v, count);
 }
 
 GL_APICALL void GL_APIENTRY
 glUniform2fv(GLint location, GLsizei count, const GLfloat* v){
-    // FIXME:
+    cwgl_ctx_t* ctx;
+    glue_ctx_t* glue;
+    cwgl_UniformLocation_t* loc;
+    ctx = glue_current_ctx();
+    glue = glue_current_glue();
+
+    loc = uniformlocation(glue, location);
+    cwgl_uniform2fv(ctx, loc, v, count);
 }
 
 GL_APICALL void GL_APIENTRY
 glUniform3fv(GLint location, GLsizei count, const GLfloat* v){
-    // FIXME:
+    cwgl_ctx_t* ctx;
+    glue_ctx_t* glue;
+    cwgl_UniformLocation_t* loc;
+    ctx = glue_current_ctx();
+    glue = glue_current_glue();
+
+    loc = uniformlocation(glue, location);
+    cwgl_uniform3fv(ctx, loc, v, count);
 }
 
 GL_APICALL void GL_APIENTRY
 glUniform4fv(GLint location, GLsizei count, const GLfloat* v){
-    // FIXME:
+    cwgl_ctx_t* ctx;
+    glue_ctx_t* glue;
+    cwgl_UniformLocation_t* loc;
+    ctx = glue_current_ctx();
+    glue = glue_current_glue();
+
+    loc = uniformlocation(glue, location);
+    cwgl_uniform4fv(ctx, loc, v, count);
 }
 
 GL_APICALL void GL_APIENTRY
 glUniformMatrix2fv(GLint location, GLsizei count, GLboolean transpose,
                    const GLfloat *value){
-    // FIXME:
+    cwgl_ctx_t* ctx;
+    glue_ctx_t* glue;
+    cwgl_UniformLocation_t* loc;
+    ctx = glue_current_ctx();
+    glue = glue_current_glue();
+
+    loc = uniformlocation(glue, location);
+    cwgl_uniformMatrix2fv(ctx, loc, transpose, value, count);
 }
 
 GL_APICALL void GL_APIENTRY
 glUniformMatrix3fv(GLint location, GLsizei count, GLboolean transpose,
                    const GLfloat *value){
-    // FIXME:
+    cwgl_ctx_t* ctx;
+    glue_ctx_t* glue;
+    cwgl_UniformLocation_t* loc;
+    ctx = glue_current_ctx();
+    glue = glue_current_glue();
+
+    loc = uniformlocation(glue, location);
+    cwgl_uniformMatrix3fv(ctx, loc, transpose, value, count);
 }
 
 GL_APICALL void GL_APIENTRY
 glUniformMatrix4fv(GLint location, GLsizei count, GLboolean transpose,
                    const GLfloat *value){
-    // FIXME:
+    cwgl_ctx_t* ctx;
+    glue_ctx_t* glue;
+    cwgl_UniformLocation_t* loc;
+    ctx = glue_current_ctx();
+    glue = glue_current_glue();
+
+    loc = uniformlocation(glue, location);
+    cwgl_uniformMatrix4fv(ctx, loc, transpose, value, count);
 }
 
 /* 2.10.5 Shader Execution */

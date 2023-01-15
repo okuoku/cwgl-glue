@@ -26,7 +26,6 @@ typedef union glue_obj_ptr_u glue_obj_ptr_t;
 
 #define GLUE_MAX_UNIFORMS 32
 struct glue_program_uniform_cache_s {
-    unsigned int location;
     cwgl_UniformLocation_t* obj;
     char* name;
 };
@@ -55,6 +54,7 @@ struct glue_ctx_s {
     glue_obj_slot_t* obj;
     glue_va_state_t va_state[GLUE_MAX_VERTEX_ATTRIBUTES];
     cwgl_enum_t err;
+    int current_program;
 };
 typedef struct glue_ctx_s glue_ctx_t;
 
