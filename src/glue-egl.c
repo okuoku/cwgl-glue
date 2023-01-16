@@ -1,4 +1,12 @@
+#define CWGL_DECL_ENUMS
+
+#include "yfrm.h"
 #include "glue-priv.h"
+#include "glue-ctx.h"
+
+#include <stdio.h>
+
+// FIXME: ONLY for gl4es now
 
 /* 3.1 Errors */
 // eglGetError
@@ -8,10 +16,14 @@
 
 CWGL_GLUE_EXPORT_EGL EGLDisplay KHRONOS_APIENTRY
 eglGetDisplay(EGLNativeDisplayType display_id){
+    /* Do nothing */
+    return 0;
 }
 
 CWGL_GLUE_EXPORT_EGL EGLBoolean KHRONOS_APIENTRY
 eglInitialize(EGLDisplay dpy, EGLint *major, EGLint *minor){
+    /* Do nothing */
+    return 1;
 }
 
 // eglTerminate
@@ -26,6 +38,8 @@ CWGL_GLUE_EXPORT_EGL EGLBoolean KHRONOS_APIENTRY
 eglChooseConfig(EGLDisplay dpy, const EGLint *attrib_list,
                 EGLConfig *configs, EGLint config_size,
                 EGLint *num_config){
+    /* Do nothing */
+    return 1;
 }
 
 /* 3.4.3 Querying Configuration Attributes */
@@ -38,6 +52,8 @@ CWGL_GLUE_EXPORT_EGL EGLSurface KHRONOS_APIENTRY
 eglCreateWindowSurface(EGLDisplay dpy, EGLConfig config,
                        EGLNativeWindowType win,
                        const EGLint *attrib_list){
+    /* Do nothing */
+    return 0;
 }
 
 /* 3.5.2 Creating Off-Screen Rendering Surfaces */
@@ -66,24 +82,45 @@ eglCreateWindowSurface(EGLDisplay dpy, EGLConfig config,
 /* 3.7 Rendering Contexts */
 CWGL_GLUE_EXPORT_EGL EGLBoolean KHRONOS_APIENTRY
 eglBindAPI(EGLenum api){
+    /* Do nothing */
+    return 0;
 }
 // eglQueryAPI
+
+static glue_ctx_t* my_ctx = 0;
 
 /* 3.7.1 Creating Rendering Contexts */
 CWGL_GLUE_EXPORT_EGL EGLContext  KHRONOS_APIENTRY
 eglCreateContext(EGLDisplay dpy, EGLConfig config, EGLContext share_context,
                  const EGLint *attrib_list){
+    int i;
+    if(my_ctx){
+        /* TENTATIVE: Disable critical states */
+        for(i=0;i!=GLUE_MAX_VERTEX_ATTRIBUTES;i++){
+            cwgl_disableVertexAttribArray(my_ctx->ctx, i);
+        }
+        cwgl_bindBuffer(my_ctx->ctx, ELEMENT_ARRAY_BUFFER, 0);
+        cwgl_bindBuffer(my_ctx->ctx, ARRAY_BUFFER, 0);
+    }else{
+        my_ctx = glue_init(1280, 720);
+        yfrm_frame_begin0(my_ctx->ctx);
+    }
+    return 0;
 }
 
 /* 3.7.2 Destroying Rendering Contexts */
 CWGL_GLUE_EXPORT_EGL EGLBoolean KHRONOS_APIENTRY
 eglDestroyContext(EGLDisplay dpy, EGLContext ctx){
+    /* Do nothing */
+    return 1;
 }
 
 /* 3.7.3 Binding Contexts and Drawables */
 CWGL_GLUE_EXPORT_EGL EGLBoolean KHRONOS_APIENTRY
 eglMakeCurrent(EGLDisplay dpy, EGLSurface draw, EGLSurface read,
                EGLContext ctx){
+    /* Do nothing */
+    return 1;
 }
 
 /* 3.7.4 Context Queries */
@@ -115,6 +152,9 @@ eglMakeCurrent(EGLDisplay dpy, EGLSurface draw, EGLSurface read,
 /* 3.10.1 Posting to a Window */
 CWGL_GLUE_EXPORT_EGL EGLBoolean KHRONOS_APIENTRY
 eglSwapBuffers(EGLDisplay dpy, EGLSurface surface){
+    yfrm_frame_end0(my_ctx->ctx);
+    yfrm_frame_begin0(my_ctx->ctx);
+    return 1;
 }
 
 /* 3.10.2 Copying to a Native Pixmap */
@@ -123,8 +163,18 @@ eglSwapBuffers(EGLDisplay dpy, EGLSurface surface){
 // eglSwapInterval
 
 /* 3.11 Obtaining Function Pointers */
+void* glue_lookup(const char* name);
 CWGL_GLUE_EXPORT_EGL void* KHRONOS_APIENTRY
 eglGetProcAddress(const char *procname){
+    void* p;
+
+    p = glue_lookup(procname);
+    if(p){
+        printf("proc: %s = %p\n", procname, p);
+    }else{
+        printf("proc: %s NOT FOUND\n", procname);
+    }
+    return p;
 }
 
 /* 3.12 Releasing Thread State */

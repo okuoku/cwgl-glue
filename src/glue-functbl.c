@@ -14,7 +14,7 @@ CWGL_GLUE_EXPORT_EGL EGLBoolean KHRONOS_APIENTRY eglSwapBuffers(EGLDisplay dpy, 
 CWGL_GLUE_EXPORT_EGL void* KHRONOS_APIENTRY eglGetProcAddress(const char *procname);
 
 void*
-cwgl_glue_lookup(const char* name){
+glue_lookup(const char* name){
 #define ITR_CHECK(func) \
     if(!strcmp(name, #func)){ \
         return func; \
