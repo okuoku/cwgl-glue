@@ -1,15 +1,21 @@
-#include "glue-priv.h"
-#include "glue-ctx.h"
-#include <stdlib.h>
+#define CWGL_DECL_ENUMS
+
 #ifdef _WIN32
 #define _CRT_SECURE_NO_WARNINGS
 #endif
+
+#include "glue-priv.h"
+#include "glue-ctx.h"
+#include <stdlib.h>
 #include <string.h>
 
 /* 2.5 GL Errors */
 GL_APICALL GLenum GL_APIENTRY
 glGetError(void){
-    // FIXME:
+    cwgl_ctx_t* ctx;
+    ctx = glue_current_ctx();
+
+    return cwgl_getError(ctx);
 }
 
 /* 2.7 Current Vertex State */
@@ -71,28 +77,215 @@ GL_APICALL void GL_APIENTRY
 glVertexAttribPointer(GLuint index, GLint size, GLenum type, 
                       GLboolean normalized, GLsizei stride,
                       const void *pointer){
-    // FIXME:
+    cwgl_ctx_t* ctx;
+    glue_ctx_t* glue;
+    ctx = glue_current_ctx();
+    glue = glue_current_glue();
+
+    if(index >= GLUE_MAX_VERTEX_ATTRIBUTES){
+        abort(); // overflow
+    }
+
+    if(glue->current_array_buffer){
+        if((uintptr_t) pointer > UINT32_MAX){
+            abort(); // overflow
+        }
+        /* Buffer bound. clear va_state pass args to cwgl */
+        glue->va_state[index].use_client_array = 0;
+        cwgl_vertexAttribPointer(ctx, index, size, (cwgl_enum_t) type,
+                                 normalized, stride, (uint32_t) pointer);
+    }else{
+        /* Unbound. Just record args to cache */
+        glue->va_state[index].use_client_array = 1;
+        glue->va_state[index].client_array_size = size;
+        glue->va_state[index].client_array_type = (cwgl_enum_t) type;
+        glue->va_state[index].client_array_normalized = normalized;
+        glue->va_state[index].client_array_stride = stride;
+        glue->va_state[index].client_array_ptr = pointer;
+    }
 }
 
 GL_APICALL void GL_APIENTRY
 glEnableVertexAttribArray(GLuint index){
-    // FIXME:
+    cwgl_ctx_t* ctx;
+    glue_ctx_t* glue;
+    ctx = glue_current_ctx();
+    glue = glue_current_glue();
+
+    if(index >= GLUE_MAX_VERTEX_ATTRIBUTES){
+        abort(); // overflow
+    }
+
+    cwgl_enableVertexAttribArray(ctx, index);
+    glue->va_state[index].enable = 1;
 }
 
 GL_APICALL void GL_APIENTRY
 glDisableVertexAttribArray(GLuint index){
-    // FIXME:
+    cwgl_ctx_t* ctx;
+    glue_ctx_t* glue;
+    ctx = glue_current_ctx();
+    glue = glue_current_glue();
+
+    if(index >= GLUE_MAX_VERTEX_ATTRIBUTES){
+        abort(); // overflow
+    }
+
+    cwgl_disableVertexAttribArray(ctx, index);
+    glue->va_state[index].enable = 0;
+}
+
+static int 
+elementsize(cwgl_enum_t type){
+    switch(type){
+        case BYTE:
+        case UNSIGNED_BYTE:
+            return 1;
+        case SHORT:
+        case UNSIGNED_SHORT:
+        //case HALF_FLOAT:
+            return 2;
+        case INT:
+        case UNSIGNED_INT:
+        case FLOAT:
+            return 4;
+        default:
+            abort(); // unknown type
+            return 0;
+    }
+}
+
+static int /* realized? */
+realize_proxy_buffers(glue_ctx_t* glue, size_t count){
+    glue_va_state_t* state;
+    int required = 0;
+    char* temp = 0;
+    void* buf;
+    int i;
+    size_t elemsize;
+    size_t bufsize;
+    size_t x;
+    for(i = 0; i!= GLUE_MAX_VERTEX_ATTRIBUTES; i++){
+        state = &glue->va_state[i];
+        if(state->enable && state->use_client_array){
+            required = 1;
+            break;
+        }
+    }
+    if(! required){
+        return 0;
+    }
+    for(i = 0; i!= GLUE_MAX_VERTEX_ATTRIBUTES; i++){
+        state = &glue->va_state[i];
+        if(state->enable && state->use_client_array){
+            elemsize = elementsize(state->client_array_type) *
+                state->client_array_size;
+            bufsize = elemsize * count;
+            if(state->client_array_stride != elemsize){
+                temp = malloc(bufsize);
+                if(! temp){
+                    abort(); // NOMEM
+                }
+                /* Gather elements */
+                for(x = 0; x != count; x++){
+                    memcpy(temp + (elemsize * x),
+                           (char*)state->client_array_ptr +
+                           (state->client_array_stride * elemsize * x),
+                           elemsize);
+                }
+                buf = temp;
+            }else{
+                /* Directly use client buffer */
+                buf = (void*)state->client_array_ptr;
+            }
+
+            /* Upload to GPU */
+            state->proxy_buffer = cwgl_createBuffer(glue->ctx);
+            cwgl_bindBuffer(glue->ctx, ARRAY_BUFFER, state->proxy_buffer);
+            cwgl_bufferData(glue->ctx, ARRAY_BUFFER, 
+                            bufsize, buf, STREAM_DRAW);
+
+            /* Update binding */
+            cwgl_vertexAttribPointer(glue->ctx, i, 
+                                     state->client_array_size,
+                                     state->client_array_type,
+                                     state->client_array_normalized,
+                                     0 /* stride */,
+                                     0 /* offset */);
+            cwgl_enableVertexAttribArray(glue->ctx, i);
+        }
+    }
+
+    if(temp){
+        free(temp);
+    }
+
+    return 1;
+}
+
+static void
+teardown_proxy_buffers(glue_ctx_t* glue){
+    int i;
+    glue_va_state_t* state;
+    for(i = 0; i!= GLUE_MAX_VERTEX_ATTRIBUTES; i++){
+        state = &glue->va_state[i];
+        if(state->proxy_buffer){
+            cwgl_deleteBuffer(glue->ctx, state->proxy_buffer);
+            cwgl_Buffer_release(glue->ctx, state->proxy_buffer);
+        }
+    }
+
+    cwgl_bindBuffer(glue->ctx, ARRAY_BUFFER,
+                    glue->current_array_buffer_obj);
 }
 
 GL_APICALL void GL_APIENTRY
 glDrawArrays(GLenum mode, GLint first, GLsizei count){
-    // FIXME:
+    int realized;
+    cwgl_ctx_t* ctx;
+    glue_ctx_t* glue;
+    ctx = glue_current_ctx();
+    glue = glue_current_glue();
+
+    if(count < 0){
+        abort(); // overflow
+    }
+
+    realized = realize_proxy_buffers(glue, count);
+
+    cwgl_drawArrays(ctx, (cwgl_enum_t) mode, first, count);
+
+    if(realized){
+        teardown_proxy_buffers(glue);
+    }
 }
 
 GL_APICALL void GL_APIENTRY
 glDrawElements(GLenum mode, GLsizei count, GLenum type,
                void* indices){
-    // FIXME:
+    int i;
+    cwgl_ctx_t* ctx;
+    glue_ctx_t* glue;
+    glue_va_state_t* state;
+    ctx = glue_current_ctx();
+    glue = glue_current_glue();
+
+    if(count < 0){
+        abort(); // overflow
+    }
+    if(! glue->current_element_array_buffer){
+        abort(); // Not implemented
+    }
+
+    for(i = 0; i!= GLUE_MAX_VERTEX_ATTRIBUTES; i++){
+        state = &glue->va_state[i];
+        if(state->enable && state->use_client_array){
+            abort(); // Not implemented
+        }
+    }
+
+    cwgl_drawElements(ctx, (cwgl_enum_t) mode, count, (cwgl_enum_t) type,
+                      (uint32_t)(uintptr_t) indices);
 }
 
 /* 2.9 Buffer Objects */
@@ -116,8 +309,15 @@ glBindBuffer(GLenum target, GLuint buffer){
             buf = ptr->buffer;
         }
     }
+    if((cwgl_enum_t) target == ARRAY_BUFFER){
+        glue->current_array_buffer = buffer;
+        glue->current_array_buffer_obj = buf;
+    }
+    if((cwgl_enum_t) target == ELEMENT_ARRAY_BUFFER){
+        glue->current_element_array_buffer = buffer;
+    }
     cwgl_bindBuffer(ctx, (cwgl_enum_t) target, buf);
-    // FIXME: Track binding here
+
 }
 
 GL_APICALL void GL_APIENTRY
@@ -138,10 +338,12 @@ glDeleteBuffers(GLsizei n, const GLuint *buffers){
             }
             cwgl_deleteBuffer(ctx, ptr->buffer);
             (void) glue_del(glue, OBJ_BUFFER, buffers[x]);
-            // FIXME: Track binding here
+            if(glue->current_array_buffer == buffers[x]){
+                glue->current_array_buffer = 0;
+                glue->current_array_buffer_obj = 0;
+            }
         }
     }
-
 }
 
 GL_APICALL void GL_APIENTRY
@@ -491,12 +693,41 @@ glGetActiveAttrib(GLuint program, GLuint index, GLsizei bufSize,
 
 GL_APICALL GLint GL_APIENTRY
 glGetAttribLocation(GLuint program, const char *name){
-    // FIXME:
+    GLint r;
+    cwgl_ctx_t* ctx;
+    glue_ctx_t* glue;
+    glue_obj_ptr_t* ptr;
+    cwgl_Program_t* prg;
+
+    ctx = glue_current_ctx();
+    glue = glue_current_glue();
+    ptr = glue_get(glue, OBJ_PROGRAM, program);
+    if(! ptr){
+        abort(); // error
+    }
+
+    prg = ptr->program;
+    r = cwgl_getAttribLocation(ctx, prg, name);
+    return r;
 }
 
 GL_APICALL void GL_APIENTRY
 glBindAttribLocation(GLuint program, GLuint index, const char *name){
-    // FIXME:
+    cwgl_ctx_t* ctx;
+    glue_ctx_t* glue;
+    glue_obj_ptr_t* ptr;
+    cwgl_Program_t* prg;
+
+    ctx = glue_current_ctx();
+    glue = glue_current_glue();
+    ptr = glue_get(glue, OBJ_PROGRAM, program);
+    if(! ptr){
+        abort(); // error
+    }
+
+    prg = ptr->program;
+    cwgl_bindAttribLocation(ctx, prg, index, name);
+    return;
 }
 
 GL_APICALL GLint GL_APIENTRY

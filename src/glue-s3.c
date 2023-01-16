@@ -1,3 +1,5 @@
+#define CWGL_DECL_ENUMS
+
 #include "glue-priv.h"
 #include "glue-ctx.h"
 #include <stdlib.h>
@@ -52,12 +54,44 @@ glActiveTexture(GLenum texture){
     cwgl_activeTexture(ctx, (cwgl_enum_t) texture);
 }
 
+static size_t
+pixelsize(cwgl_enum_t type){
+    switch(type){
+        case UNSIGNED_BYTE:
+        case BYTE:
+            return 1;
+        case UNSIGNED_SHORT:
+        case SHORT:
+        case UNSIGNED_SHORT_5_6_5:
+        case UNSIGNED_SHORT_4_4_4_4:
+        case UNSIGNED_SHORT_5_5_5_1:
+            return 2;
+        case UNSIGNED_INT:
+        case INT:
+        case FLOAT:
+            return 4;
+
+        default:
+            abort(); // unknown
+            return 0;
+    }
+}
+
 /* 3.7.1 Texture Image Specification */
 GL_APICALL void GL_APIENTRY
 glTexImage2D(GLenum target, GLint level, GLint internalformat,
              GLsizei width, GLsizei height, GLint border,
              GLenum format, GLenum type, void *data){
-    // FIXME:
+    cwgl_ctx_t* ctx;
+    size_t psize;
+    psize = pixelsize(type);
+    ctx = glue_current_ctx();
+
+    cwgl_texImage2D(ctx, (cwgl_enum_t) target, level, internalformat,
+                    width, height, border, (cwgl_enum_t) format, 
+                    (cwgl_enum_t) type, data,
+                    psize * width * height);
+
 }
 
 /* 3.7.2 Alternate Texture Image Specification Commands */
@@ -77,7 +111,15 @@ GL_APICALL void GL_APIENTRY
 glTexSubImage2D(GLenum target, GLint level, GLint xoffset, GLint yoffset,
                 GLsizei width, GLsizei height, GLenum format, GLenum type,
                 void *data){
-    // FIXME:
+    cwgl_ctx_t* ctx;
+    size_t psize;
+    psize = pixelsize(type);
+    ctx = glue_current_ctx();
+
+    cwgl_texSubImage2D(ctx, (cwgl_enum_t) target, level,
+                       xoffset,  yoffset, width, height, 
+                       (cwgl_enum_t) format, (cwgl_enum_t) type,
+                       data, psize * width * height);
 }
 
 GL_APICALL void GL_APIENTRY
@@ -95,14 +137,14 @@ GL_APICALL void GL_APIENTRY
 glCompressedTexImage2D(GLenum target, GLint level, GLenum internalformat,
                        GLsizei width, GLsizei height, GLint border,
                        GLsizei imageSize, void *data){
-    // FIXME:
+    abort(); // No compressed texture supported
 }
 
 GL_APICALL void GL_APIENTRY
 glCompressedTexSubImage2D(GLenum target, GLint level, GLint xoffset,
                           GLint yoffset, GLsizei width, GLsizei height,
                           GLenum format, GLsizei imageSize, void *data){
-    // FIXME:
+    abort(); // No compressed texture supported
 }
 
 /* 3.7.4 Texture Parameters */

@@ -40,10 +40,13 @@ typedef struct glue_obj_slot_s glue_obj_slot_t;
 
 #define GLUE_MAX_VERTEX_ATTRIBUTES 32
 struct glue_va_state_s {
-    int active;
+    void* client_array_ptr;
+    int enable;
     int use_client_array;
-    uintptr_t client_array_ptr_start;
-    uintptr_t client_array_ptr_size;
+    int client_array_size; /* Element count */
+    cwgl_enum_t client_array_type;
+    int client_array_normalized;
+    int client_array_stride;
     cwgl_Buffer_t* proxy_buffer;
 };
 typedef struct glue_va_state_s glue_va_state_t;
@@ -55,6 +58,9 @@ struct glue_ctx_s {
     glue_va_state_t va_state[GLUE_MAX_VERTEX_ATTRIBUTES];
     cwgl_enum_t err;
     int current_program;
+    size_t current_array_buffer;
+    cwgl_Buffer_t* current_array_buffer_obj;
+    size_t current_element_array_buffer;
 };
 typedef struct glue_ctx_s glue_ctx_t;
 
