@@ -402,7 +402,8 @@ glShaderSource(GLuint shader, GLsizei count, const GLchar *const*string,
     glue_ctx_t* glue;
     glue_obj_ptr_t* ptr;
     cwgl_Shader_t* sh;
-    size_t x,y,srctotal;
+    int i;
+    size_t y,srctotal;
     char* temp;
     ctx = glue_current_ctx();
     glue = glue_current_glue();
@@ -421,16 +422,12 @@ glShaderSource(GLuint shader, GLsizei count, const GLchar *const*string,
     /* pass1: Get total length */
     srctotal = 0;
     if(! length){
-        x = 0;
-        while(string[x]){
-            srctotal += strlen(string[x]);
-            x++;
+        for(i = 0; i != count; i++){
+            srctotal += strlen(string[i]);
         }
     }else{
-        x = 0;
-        while(string[x]){
-            srctotal += length[x];
-            x++;
+        for(i = 0; i != count; i++){
+            srctotal += length[i];
         }
     }
     temp = malloc(srctotal + 1);
@@ -440,19 +437,15 @@ glShaderSource(GLuint shader, GLsizei count, const GLchar *const*string,
 
     /* pass2: Copy to temporary buffer */
     if(! length){
-        x = 0;
         temp[0] = 0;
-        while(string[x]){
-            (void) strcat(temp, string[x]);
-            x++;
+        for(i = 0; i != count; i++){
+            (void) strcat(temp, string[i]);
         }
     }else{
-        x = 0;
         y = 0;
-        while(string[x]){
-            memcpy(&temp[y], string[x], length[x]);
-            y += length[x];
-            x++;
+        for(i = 0; i != count; i++){
+            memcpy(&temp[y], string[i], length[i]);
+            y += length[i];
         }
         temp[y] = 0;
     }
@@ -605,11 +598,15 @@ glUseProgram(GLuint program){
     ctx = glue_current_ctx();
     glue = glue_current_glue();
 
-    ptr = glue_get(glue, OBJ_PROGRAM, program);
-    if(! ptr){
-        abort(); // error
+    if(! program){
+        prg = 0;
+    }else{
+        ptr = glue_get(glue, OBJ_PROGRAM, program);
+        if(! ptr){
+            abort(); // error
+        }
+        prg = ptr->program;
     }
-    prg = ptr->program;
 
     cwgl_useProgram(ctx, prg);
     glue->current_program = program;
@@ -751,6 +748,9 @@ glGetUniformLocation(GLuint program, const char *name){
     /* First, search for cached uniform location */
     for(x = 0; x != GLUE_MAX_UNIFORMS; x++){
         cache = &glue->obj[program].uniform_cache[x];
+        if (!cache->name) {
+            continue;
+        }
         if(! strcmp(cache->name, name)){
             return x;
         }

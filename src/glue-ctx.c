@@ -137,6 +137,7 @@ glue_init(int width, int height){
         memset(glue_ctx, 0, sizeof(glue_ctx_t));
         glue_ctx->ctx = cwgl_ctx;
         glue_ctx->objs = 100;
+        glue_ctx->obj = malloc(sizeof(glue_obj_slot_t) * 100);
         for(i=0; i!= glue_ctx->objs; i++){
             obj_setnone(glue_ctx, i);
         }
