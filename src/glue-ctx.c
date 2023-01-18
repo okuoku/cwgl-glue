@@ -38,6 +38,7 @@ glue_put(glue_ctx_t* ctx, glue_obj_type_t type, glue_obj_ptr_t* ptr){
     }
     ctx->obj[x].type = type;
     ctx->obj[x].ptr = *ptr;
+    memset(ctx->obj[x].uniform_cache, 0, sizeof(ctx->obj[x].uniform_cache));
     return x;
 }
 
