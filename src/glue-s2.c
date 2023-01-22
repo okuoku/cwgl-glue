@@ -213,11 +213,11 @@ realize_proxy_buffers(glue_ctx_t* glue, size_t count){
                                      0 /* stride, tightly packed */,
                                      0 /* offset */);
             cwgl_enableVertexAttribArray(glue->ctx, i);
+            if(temp){
+                free(temp);
+                temp = 0;
+            }
         }
-    }
-
-    if(temp){
-        free(temp);
     }
 
     return 1;
