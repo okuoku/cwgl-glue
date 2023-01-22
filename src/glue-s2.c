@@ -181,7 +181,7 @@ realize_proxy_buffers(glue_ctx_t* glue, size_t count){
             elemsize = elementsize(state->client_array_type) *
                 state->client_array_size;
             bufsize = elemsize * count;
-            if(state->client_array_stride != elemsize){
+            if(state->client_array_stride && state->client_array_stride != elemsize){
                 temp = malloc(bufsize);
                 if(! temp){
                     abort(); // NOMEM
@@ -210,7 +210,7 @@ realize_proxy_buffers(glue_ctx_t* glue, size_t count){
                                      state->client_array_size,
                                      state->client_array_type,
                                      state->client_array_normalized,
-                                     0 /* stride */,
+                                     0 /* stride, tightly packed */,
                                      0 /* offset */);
             cwgl_enableVertexAttribArray(glue->ctx, i);
         }
