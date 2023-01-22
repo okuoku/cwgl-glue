@@ -101,6 +101,10 @@ eglCreateContext(EGLDisplay dpy, EGLConfig config, EGLContext share_context,
         }
         cwgl_bindBuffer(my_ctx->ctx, ELEMENT_ARRAY_BUFFER, 0);
         cwgl_bindBuffer(my_ctx->ctx, ARRAY_BUFFER, 0);
+
+        /* Setup rasterizer */
+        cwgl_viewport(my_ctx->ctx, 0, 0, 1280, 720);
+        cwgl_scissor(my_ctx->ctx, 0, 0, 1280, 720);
     }else{
         my_ctx = glue_init(1280, 720);
         yfrm_frame_begin0(my_ctx->ctx);
