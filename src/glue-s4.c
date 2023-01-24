@@ -1,3 +1,5 @@
+#define CWGL_DECL_ENUMS
+
 #include "glue-priv.h"
 #include "glue-ctx.h"
 #include <stdlib.h>
@@ -176,10 +178,32 @@ glClearStencil(GLint s){
 
 /* 4.3 Reading Pixels */
 /* 4.3.1 Reading Pixels */
+
+static int
+pixelelemsize(cwgl_enum_t type){
+    switch(type){
+        case UNSIGNED_BYTE:
+            return 1;
+        case UNSIGNED_INT:
+        case INT:
+        case FLOAT:
+            return 4;
+        default:
+            abort();
+            return 0;
+    }
+}
+
 GL_APICALL void GL_APIENTRY
 glReadPixels(GLint x, GLint y, GLsizei width, GLsizei height, 
              GLenum format, GLenum type, void *data){
-    // FIXME:
+    cwgl_ctx_t* ctx;
+    ctx = glue_current_ctx();
+    // FIXME: Consider glPixelStorei setting
+    const int elemsize = pixelelemsize((cwgl_enum_t) type);
+    const size_t datasize = width * height * elemsize * 4; // FIXME: Align??
+
+    cwgl_readPixels(ctx, x, y, width, height, format, type, data, datasize);
 }
 
 /* 4.4 Framebuffer Objects */
