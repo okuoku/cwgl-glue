@@ -93,22 +93,8 @@ static glue_ctx_t* my_ctx = 0;
 CWGL_GLUE_EXPORT_EGL EGLContext  KHRONOS_APIENTRY
 eglCreateContext(EGLDisplay dpy, EGLConfig config, EGLContext share_context,
                  const EGLint *attrib_list){
-    int i;
-    if(my_ctx){
-        /* TENTATIVE: Disable critical states */
-        for(i=0;i!=GLUE_MAX_VERTEX_ATTRIBUTES;i++){
-            cwgl_disableVertexAttribArray(my_ctx->ctx, i);
-        }
-        cwgl_bindBuffer(my_ctx->ctx, ELEMENT_ARRAY_BUFFER, 0);
-        cwgl_bindBuffer(my_ctx->ctx, ARRAY_BUFFER, 0);
-
-        /* Setup rasterizer */
-        cwgl_viewport(my_ctx->ctx, 0, 0, 1280, 720);
-        cwgl_scissor(my_ctx->ctx, 0, 0, 1280, 720);
-    }else{
-        my_ctx = glue_init(1280, 720);
-        yfrm_frame_begin0(my_ctx->ctx);
-    }
+    my_ctx = glue_init(1280, 720);
+    yfrm_frame_begin0(my_ctx->ctx);
     return 0;
 }
 

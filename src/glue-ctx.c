@@ -8,7 +8,6 @@
 static int yfrm_initialized = 0;
 
 /* Global contexts */
-static cwgl_ctx_t* cwgl_ctx = 0;
 static glue_ctx_t* glue_ctx = 0;
 
 static void
@@ -31,6 +30,9 @@ glue_put(glue_ctx_t* ctx, glue_obj_type_t type, glue_obj_ptr_t* ptr){
     if(x == ctx->objs){
         /* Expand by 2x and use (previous) last entry */
         ctx->obj = realloc(ctx->obj, sizeof(glue_obj_slot_t) * x * 2);
+        if (!ctx->obj) {
+            abort();
+        }
         ctx->objs = x * 2;
         for(y = x; y!= ctx->objs; y++){
             obj_setnone(ctx, y);
@@ -119,33 +121,45 @@ glue_current_glue(void){
 
 cwgl_ctx_t*
 glue_current_ctx(void){
-    return cwgl_ctx;
+    return glue_ctx->ctx;
 }
 
 
 glue_ctx_t*
 glue_init(int width, int height){
     int i;
+    cwgl_ctx_t* current_cwgl_ctx;
     if(! yfrm_initialized){
         (void)yfrm_init();
         yfrm_initialized = 1;
     }
-    if(! cwgl_ctx){
-        cwgl_ctx = yfrm_cwgl_ctx_create(width, height, 0, 0);
-    }
     if(! glue_ctx){
         glue_ctx = malloc(sizeof(glue_ctx_t));
-        memset(glue_ctx, 0, sizeof(glue_ctx_t));
-        glue_ctx->ctx = cwgl_ctx;
-        glue_ctx->objs = 100;
-        glue_ctx->obj = malloc(sizeof(glue_obj_slot_t) * 100);
-        for(i=0; i!= glue_ctx->objs; i++){
-            obj_setnone(glue_ctx, i);
+        if(! glue_ctx){
+            abort();
         }
-        glue_ctx->obj[0].type = OBJ_ZERO;
+        current_cwgl_ctx = 0;
     }else{
-        // FIXME: Reset context here.
+        free(glue_ctx->obj);
+        current_cwgl_ctx = glue_ctx->ctx;
     }
+    memset(glue_ctx, 0, sizeof(glue_ctx_t));
+    glue_ctx->objs = 100;
+    glue_ctx->obj = malloc(sizeof(glue_obj_slot_t) * 100);
+    if(! glue_ctx->obj){
+        abort();
+    }
+    for(i=0; i!= glue_ctx->objs; i++){
+        obj_setnone(glue_ctx, i);
+    }
+    glue_ctx->obj[0].type = OBJ_ZERO;
+    if(! current_cwgl_ctx){
+        current_cwgl_ctx = yfrm_cwgl_ctx_create(width, height, 0, 0);
+        glue_ctx->ctx = current_cwgl_ctx;
+    }else{
+        glue_ctx->ctx = yfrm_cwgl_ctx_reset0(current_cwgl_ctx);
+    }
+
     return glue_ctx;
 }
 
