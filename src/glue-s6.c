@@ -326,7 +326,7 @@ GL_APICALL const GLubyte* GL_APIENTRY // the spec lacks const
 glGetString(GLenum name){
     switch(name){
         case GL_EXTENSIONS:
-            return "";
+            return "GL_OES_packed_depth_stencil GL_OES_texture_npot ";
         case GL_VENDOR:
             return "cwgl";
         case GL_RENDERER:

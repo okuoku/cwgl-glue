@@ -69,6 +69,9 @@ pixelsize(cwgl_enum_t type){
         case UNSIGNED_INT:
         case INT:
         case FLOAT:
+        // FIXME: Not in WebGL1
+        //        In WebGL2, UNSIGNED_INT_24_8
+        case 0x84fa: /* UNSIGNED_INT_24_8_OES: OES_packed_depth_stencil */
             return 4;
 
         default:
