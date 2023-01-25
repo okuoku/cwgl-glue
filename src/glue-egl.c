@@ -93,7 +93,7 @@ static glue_ctx_t* my_ctx = 0;
 CWGL_GLUE_EXPORT_EGL EGLContext  KHRONOS_APIENTRY
 eglCreateContext(EGLDisplay dpy, EGLConfig config, EGLContext share_context,
                  const EGLint *attrib_list){
-    my_ctx = glue_init(1280, 720);
+    my_ctx = glue_init(1280, 1024);
     yfrm_frame_begin0(my_ctx->ctx);
     return 0;
 }
