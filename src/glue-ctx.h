@@ -24,7 +24,7 @@ union glue_obj_ptr_u {
 };
 typedef union glue_obj_ptr_u glue_obj_ptr_t;
 
-#define GLUE_MAX_UNIFORMS 32
+#define GLUE_MAX_UNIFORMS 1024
 struct glue_program_uniform_cache_s {
     cwgl_UniformLocation_t* obj;
     char* name;
