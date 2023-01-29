@@ -234,9 +234,10 @@ teardown_proxy_buffers(glue_ctx_t* glue){
     ctx = glue_current_ctx1(glue);
     for(i = 0; i!= GLUE_MAX_VERTEX_ATTRIBUTES; i++){
         state = &glue->va_state[i];
-        if(state->proxy_buffer){
+        if(state-> enable && state->use_client_array && state->proxy_buffer){
             cwgl_deleteBuffer(ctx, state->proxy_buffer);
             cwgl_Buffer_release(ctx, state->proxy_buffer);
+            state->proxy_buffer = 0;
         }
     }
 
