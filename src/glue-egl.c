@@ -87,14 +87,11 @@ eglBindAPI(EGLenum api){
 }
 // eglQueryAPI
 
-static glue_ctx_t* my_ctx = 0;
-
 /* 3.7.1 Creating Rendering Contexts */
 CWGL_GLUE_EXPORT_EGL EGLContext  KHRONOS_APIENTRY
 eglCreateContext(EGLDisplay dpy, EGLConfig config, EGLContext share_context,
                  const EGLint *attrib_list){
-    my_ctx = glue_init(1280, 1024);
-    yfrm_frame_begin0(my_ctx->ctx);
+    (void)glue_init(1280, 1024);
     return 0;
 }
 
@@ -142,8 +139,7 @@ eglMakeCurrent(EGLDisplay dpy, EGLSurface draw, EGLSurface read,
 /* 3.10.1 Posting to a Window */
 CWGL_GLUE_EXPORT_EGL EGLBoolean KHRONOS_APIENTRY
 eglSwapBuffers(EGLDisplay dpy, EGLSurface surface){
-    yfrm_frame_end0(my_ctx->ctx);
-    yfrm_frame_begin0(my_ctx->ctx);
+    glue_endframe(glue_current_glue());
     return 1;
 }
 

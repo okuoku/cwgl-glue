@@ -60,11 +60,13 @@ glue_get(glue_ctx_t* ctx, glue_obj_type_t type, size_t objid){
 void 
 glue_clear_uniform_cache(glue_ctx_t* ctx, size_t program){
     size_t x;
+    cwgl_ctx_t* cwgl;
     glue_obj_slot_t* obj;
     obj = &ctx->obj[program];
+    cwgl = glue_current_ctx1(ctx);
     for(x = 0; x != GLUE_MAX_UNIFORMS; x++){
         if(obj->uniform_cache[x].obj){
-            cwgl_UniformLocation_release(ctx->ctx, 
+            cwgl_UniformLocation_release(cwgl, 
                                          obj->uniform_cache[x].obj);
             free(obj->uniform_cache[x].name);
             obj->uniform_cache[x].obj = 0;
@@ -84,7 +86,7 @@ glue_del(glue_ctx_t* ctx, glue_obj_type_t type, size_t objid){
     if(obj->type != type){
         return 0;
     }
-    cwgl = ctx->ctx;
+    cwgl = glue_current_ctx1(ctx);
     switch(obj->type){
         case OBJ_ZERO:
         case OBJ_FREE:
@@ -120,14 +122,27 @@ glue_current_glue(void){
 }
 
 cwgl_ctx_t*
+glue_current_ctx1(glue_ctx_t* glue){
+    cwgl_ctx_t* ctx;
+    ctx = glue_ctx->private__cwgl_ctx;
+    glue = glue_current_glue();
+    if(! glue->in_frame){
+        yfrm_frame_begin0(ctx);
+        glue->in_frame = 1;
+    }
+    return ctx;
+}
+
+cwgl_ctx_t*
 glue_current_ctx(void){
-    return glue_ctx->ctx;
+    return glue_current_ctx1(glue_current_glue());
 }
 
 
-glue_ctx_t*
+void
 glue_init(int width, int height){
     int i;
+    // FIXME: Implement thread handling
     cwgl_ctx_t* current_cwgl_ctx;
     if(! yfrm_initialized){
         (void)yfrm_init();
@@ -141,7 +156,7 @@ glue_init(int width, int height){
         current_cwgl_ctx = 0;
     }else{
         free(glue_ctx->obj);
-        current_cwgl_ctx = glue_ctx->ctx;
+        current_cwgl_ctx = glue_ctx->private__cwgl_ctx;
     }
     memset(glue_ctx, 0, sizeof(glue_ctx_t));
     glue_ctx->objs = 100;
@@ -155,11 +170,17 @@ glue_init(int width, int height){
     glue_ctx->obj[0].type = OBJ_ZERO;
     if(! current_cwgl_ctx){
         current_cwgl_ctx = yfrm_cwgl_ctx_create(width, height, 0, 0);
-        glue_ctx->ctx = current_cwgl_ctx;
+        glue_ctx->private__cwgl_ctx = current_cwgl_ctx;
     }else{
-        glue_ctx->ctx = yfrm_cwgl_ctx_reset0(current_cwgl_ctx);
+        glue_ctx->private__cwgl_ctx = yfrm_cwgl_ctx_reset0(current_cwgl_ctx);
     }
 
-    return glue_ctx;
+    glue_ctx->in_frame = 0;
+}
+
+void
+glue_endframe(glue_ctx_t* ctx){
+    yfrm_frame_end0(ctx->private__cwgl_ctx);
+    ctx->in_frame = 0;
 }
 

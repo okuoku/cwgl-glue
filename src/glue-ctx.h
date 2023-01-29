@@ -52,7 +52,8 @@ struct glue_va_state_s {
 typedef struct glue_va_state_s glue_va_state_t;
 
 struct glue_ctx_s {
-    cwgl_ctx_t* ctx;
+    /* NB: Use glue_current_ctx() to get ctx */
+    cwgl_ctx_t* private__cwgl_ctx;
     size_t objs;
     glue_obj_slot_t* obj;
     glue_va_state_t va_state[GLUE_MAX_VERTEX_ATTRIBUTES];
@@ -61,6 +62,7 @@ struct glue_ctx_s {
     size_t current_array_buffer;
     cwgl_Buffer_t* current_array_buffer_obj;
     size_t current_element_array_buffer;
+    int in_frame;
 };
 typedef struct glue_ctx_s glue_ctx_t;
 
@@ -71,4 +73,6 @@ glue_obj_ptr_t* glue_get(glue_ctx_t* ctx, glue_obj_type_t type, size_t objid);
 int glue_del(glue_ctx_t* ctx, glue_obj_type_t type, size_t objid);
 glue_ctx_t* glue_current_glue(void);
 cwgl_ctx_t* glue_current_ctx(void);
-glue_ctx_t* glue_init(int width, int height);
+cwgl_ctx_t* glue_current_ctx1(glue_ctx_t* ctx);
+void glue_init(int width, int height);
+void glue_endframe(glue_ctx_t* ctx);

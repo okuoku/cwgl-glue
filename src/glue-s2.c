@@ -158,6 +158,7 @@ elementsize(cwgl_enum_t type){
 static int /* realized? */
 realize_proxy_buffers(glue_ctx_t* glue, size_t count){
     glue_va_state_t* state;
+    cwgl_ctx_t* ctx;
     int required = 0;
     char* temp = 0;
     void* buf;
@@ -175,6 +176,7 @@ realize_proxy_buffers(glue_ctx_t* glue, size_t count){
     if(! required){
         return 0;
     }
+    ctx = glue_current_ctx1(glue);
     for(i = 0; i!= GLUE_MAX_VERTEX_ATTRIBUTES; i++){
         state = &glue->va_state[i];
         if(state->enable && state->use_client_array){
@@ -200,19 +202,19 @@ realize_proxy_buffers(glue_ctx_t* glue, size_t count){
             }
 
             /* Upload to GPU */
-            state->proxy_buffer = cwgl_createBuffer(glue->ctx);
-            cwgl_bindBuffer(glue->ctx, ARRAY_BUFFER, state->proxy_buffer);
-            cwgl_bufferData(glue->ctx, ARRAY_BUFFER, 
+            state->proxy_buffer = cwgl_createBuffer(ctx);
+            cwgl_bindBuffer(ctx, ARRAY_BUFFER, state->proxy_buffer);
+            cwgl_bufferData(ctx, ARRAY_BUFFER, 
                             bufsize, buf, STREAM_DRAW);
 
             /* Update binding */
-            cwgl_vertexAttribPointer(glue->ctx, i, 
+            cwgl_vertexAttribPointer(ctx, i, 
                                      state->client_array_size,
                                      state->client_array_type,
                                      state->client_array_normalized,
                                      0 /* stride, tightly packed */,
                                      0 /* offset */);
-            cwgl_enableVertexAttribArray(glue->ctx, i);
+            cwgl_enableVertexAttribArray(ctx, i);
             if(temp){
                 free(temp);
                 temp = 0;
@@ -227,15 +229,18 @@ static void
 teardown_proxy_buffers(glue_ctx_t* glue){
     int i;
     glue_va_state_t* state;
+    cwgl_ctx_t* ctx;
+
+    ctx = glue_current_ctx1(glue);
     for(i = 0; i!= GLUE_MAX_VERTEX_ATTRIBUTES; i++){
         state = &glue->va_state[i];
         if(state->proxy_buffer){
-            cwgl_deleteBuffer(glue->ctx, state->proxy_buffer);
-            cwgl_Buffer_release(glue->ctx, state->proxy_buffer);
+            cwgl_deleteBuffer(ctx, state->proxy_buffer);
+            cwgl_Buffer_release(ctx, state->proxy_buffer);
         }
     }
 
-    cwgl_bindBuffer(glue->ctx, ARRAY_BUFFER,
+    cwgl_bindBuffer(ctx, ARRAY_BUFFER,
                     glue->current_array_buffer_obj);
 }
 
