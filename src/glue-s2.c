@@ -192,7 +192,7 @@ realize_proxy_buffers(glue_ctx_t* glue, size_t count){
                 for(x = 0; x != count; x++){
                     memcpy(temp + (elemsize * x),
                            (char*)state->client_array_ptr +
-                           (state->client_array_stride * elemsize * x),
+                           (state->client_array_stride * x),
                            elemsize);
                 }
                 buf = temp;
